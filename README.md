@@ -24,19 +24,19 @@
 建议使用 Python 3.10+。安装依赖：
 
 ```bash
-python -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 运行注意力模块的张量形状自检：
 
 ```bash
-python src/attention.py
+python3 src/attention.py
 ```
 
 运行一个小规模 ViT 图像分类实验：
 
 ```bash
-python src/vit_classifier.py --epochs 1 --batch-size 64 --max-train-batches 100 --max-test-batches 20
+python3 src/vit_classifier.py --epochs 1 --batch-size 64 --max-train-batches 100 --max-test-batches 20
 ```
 
 如果本机有 GPU，脚本会自动使用 CUDA；否则使用 CPU。第一次运行会自动下载 CIFAR-10 数据集到 `data/` 目录。
