@@ -10,10 +10,15 @@ encoder -> classification head.
 from __future__ import annotations
 
 import argparse
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -38,6 +43,22 @@ class ViTConfig:
     def num_patches(self) -> int:
         patches_per_side = self.image_size // self.patch_size
         return patches_per_side * patches_per_side
+
+
+CIFAR10_CLASSES = (
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+)
+CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
+CIFAR10_STD = (0.2470, 0.2435, 0.2616)
 
 
 class PatchEmbedding(nn.Module):
@@ -141,13 +162,13 @@ def make_dataloaders(
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+            transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
         ]
     )
     test_transform = transforms.Compose(
         [
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+            transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
         ]
     )
 
@@ -246,6 +267,116 @@ def evaluate(
     return total_loss / total_samples, total_correct / total_samples
 
 
+def save_training_log(history: list[dict[str, float]], output_dir: Path) -> Path:
+    log_path = output_dir / "training_log.csv"
+    with log_path.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(
+            file,
+            fieldnames=["epoch", "train_loss", "train_acc", "test_loss", "test_acc"],
+        )
+        writer.writeheader()
+        writer.writerows(history)
+    return log_path
+
+
+def plot_training_curves(history: list[dict[str, float]], output_dir: Path) -> Path:
+    curve_path = output_dir / "training_curve.png"
+    epochs = [row["epoch"] for row in history]
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    axes[0].plot(epochs, [row["train_loss"] for row in history], marker="o", label="train")
+    axes[0].plot(epochs, [row["test_loss"] for row in history], marker="o", label="test")
+    axes[0].set_title("Loss")
+    axes[0].set_xlabel("Epoch")
+    axes[0].set_ylabel("Loss")
+    axes[0].grid(True, alpha=0.3)
+    axes[0].legend()
+
+    axes[1].plot(epochs, [row["train_acc"] for row in history], marker="o", label="train")
+    axes[1].plot(epochs, [row["test_acc"] for row in history], marker="o", label="test")
+    axes[1].set_title("Accuracy")
+    axes[1].set_xlabel("Epoch")
+    axes[1].set_ylabel("Accuracy")
+    axes[1].set_ylim(0.0, 1.0)
+    axes[1].grid(True, alpha=0.3)
+    axes[1].legend()
+
+    fig.tight_layout()
+    fig.savefig(curve_path, dpi=160)
+    plt.close(fig)
+    return curve_path
+
+
+def denormalize_cifar10(images: torch.Tensor) -> torch.Tensor:
+    mean = torch.tensor(CIFAR10_MEAN, device=images.device).view(1, 3, 1, 1)
+    std = torch.tensor(CIFAR10_STD, device=images.device).view(1, 3, 1, 1)
+    return (images * std + mean).clamp(0.0, 1.0)
+
+
+@torch.no_grad()
+def save_sample_predictions(
+    model: nn.Module,
+    loader: DataLoader,
+    device: torch.device,
+    output_dir: Path,
+    num_images: int,
+    use_amp: bool,
+) -> Path:
+    prediction_path = output_dir / "sample_predictions.png"
+    model.eval()
+    images, labels = next(iter(loader))
+    images = images[:num_images].to(device)
+    labels = labels[:num_images]
+
+    with torch.autocast(device_type=device.type, enabled=use_amp):
+        logits = model(images)
+    predictions = logits.argmax(dim=1).cpu()
+    images = denormalize_cifar10(images).cpu()
+
+    cols = min(4, num_images)
+    rows = (num_images + cols - 1) // cols
+    fig, axes = plt.subplots(rows, cols, figsize=(3 * cols, 3 * rows))
+    axes = [axes] if num_images == 1 else axes.reshape(-1)
+
+    for idx in range(rows * cols):
+        ax = axes[idx]
+        ax.axis("off")
+        if idx >= len(images):
+            continue
+        image = images[idx].permute(1, 2, 0).numpy()
+        pred_name = CIFAR10_CLASSES[predictions[idx].item()]
+        true_name = CIFAR10_CLASSES[labels[idx].item()]
+        title_color = "green" if predictions[idx].item() == labels[idx].item() else "red"
+        ax.imshow(image)
+        ax.set_title(f"pred: {pred_name}\ntrue: {true_name}", color=title_color)
+
+    fig.tight_layout()
+    fig.savefig(prediction_path, dpi=160)
+    plt.close(fig)
+    return prediction_path
+
+
+def save_checkpoint(
+    model: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    config: ViTConfig,
+    history: list[dict[str, float]],
+    output_dir: Path,
+) -> Path:
+    checkpoint_path = output_dir / "vit_lightweight.pth"
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "config": config.__dict__,
+            "history": history,
+            "class_names": CIFAR10_CLASSES,
+        },
+        checkpoint_path,
+    )
+    return checkpoint_path
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="ViT image classification homework")
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
@@ -262,6 +393,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-heads", type=int, default=4)
     parser.add_argument("--mlp-ratio", type=float, default=2.0)
     parser.add_argument("--dropout", type=float, default=0.1)
+    parser.add_argument("--output-dir", type=Path, default=Path("results"))
+    parser.add_argument("--num-sample-images", type=int, default=16)
     parser.add_argument(
         "--no-amp",
         action="store_true",
@@ -302,8 +435,10 @@ def main() -> None:
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"device={device}, amp={use_amp}, config={config}")
+    history: list[dict[str, float]] = []
     for epoch in range(1, args.epochs + 1):
         train_loss, train_acc = train_one_epoch(
             model,
@@ -328,6 +463,32 @@ def main() -> None:
             f"train loss {train_loss:.4f}, acc {train_acc:.3f} | "
             f"test loss {test_loss:.4f}, acc {test_acc:.3f}"
         )
+        history.append(
+            {
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "train_acc": train_acc,
+                "test_loss": test_loss,
+                "test_acc": test_acc,
+            }
+        )
+
+    log_path = save_training_log(history, args.output_dir)
+    curve_path = plot_training_curves(history, args.output_dir)
+    prediction_path = save_sample_predictions(
+        model,
+        test_loader,
+        device,
+        args.output_dir,
+        args.num_sample_images,
+        use_amp,
+    )
+    checkpoint_path = save_checkpoint(model, optimizer, config, history, args.output_dir)
+    print("Saved results:")
+    print(f"- training log: {log_path}")
+    print(f"- training curve: {curve_path}")
+    print(f"- sample predictions: {prediction_path}")
+    print(f"- model checkpoint: {checkpoint_path}")
 
 
 if __name__ == "__main__":

@@ -41,6 +41,18 @@ python3 src/vit_classifier.py --epochs 1 --batch-size 128 --max-train-batches 10
 
 如果本机有 GPU，脚本会自动使用 CUDA，并默认开启混合精度训练；否则使用 CPU。第一次运行会自动下载 CIFAR-10 数据集到 `data/` 目录。
 
+训练结束后会自动保存实验结果到 `results/` 目录：
+
+```text
+results/
+├── training_log.csv          # 每轮训练/测试 loss 和 accuracy
+├── training_curve.png        # loss 与 accuracy 曲线图
+├── sample_predictions.png    # 测试集样本预测可视化
+└── vit_lightweight.pth       # 模型权重和配置
+```
+
+也可以通过 `--output-dir my_results` 指定其他输出目录。
+
 默认参数已调整为适合笔记本 GPU 的轻量配置：
 
 - `--patch-size 8`：每张 `32 x 32` 图像只产生 16 个 patch token，注意力计算更少。
