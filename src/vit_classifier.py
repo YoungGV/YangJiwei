@@ -25,13 +25,13 @@ from attention import MultiHeadSelfAttention
 @dataclass
 class ViTConfig:
     image_size: int = 32
-    patch_size: int = 4
+    patch_size: int = 8
     in_channels: int = 3
     num_classes: int = 10
-    embed_dim: int = 128
-    depth: int = 4
+    embed_dim: int = 64
+    depth: int = 2
     num_heads: int = 4
-    mlp_ratio: float = 4.0
+    mlp_ratio: float = 2.0
     dropout: float = 0.1
 
     @property
@@ -191,6 +191,8 @@ def train_one_epoch(
     optimizer: torch.optim.Optimizer,
     device: torch.device,
     max_batches: int | None,
+    scaler: torch.cuda.amp.GradScaler,
+    use_amp: bool,
 ) -> tuple[float, float]:
     model.train()
     total_loss = 0.0
@@ -200,10 +202,13 @@ def train_one_epoch(
     for images, labels in iterate_limited(loader, max_batches):
         images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad(set_to_none=True)
-        logits = model(images)
-        loss = criterion(logits, labels)
-        loss.backward()
-        optimizer.step()
+        with torch.autocast(device_type=device.type, enabled=use_amp):
+            logits = model(images)
+            loss = criterion(logits, labels)
+
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         batch_size = labels.size(0)
         total_loss += loss.item() * batch_size
@@ -220,6 +225,7 @@ def evaluate(
     criterion: nn.Module,
     device: torch.device,
     max_batches: int | None,
+    use_amp: bool,
 ) -> tuple[float, float]:
     model.eval()
     total_loss = 0.0
@@ -228,8 +234,9 @@ def evaluate(
 
     for images, labels in iterate_limited(loader, max_batches):
         images, labels = images.to(device), labels.to(device)
-        logits = model(images)
-        loss = criterion(logits, labels)
+        with torch.autocast(device_type=device.type, enabled=use_amp):
+            logits = model(images)
+            loss = criterion(logits, labels)
 
         batch_size = labels.size(0)
         total_loss += loss.item() * batch_size
@@ -242,29 +249,40 @@ def evaluate(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="ViT image classification homework")
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
-    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=0.05)
-    parser.add_argument("--num-workers", type=int, default=2)
-    parser.add_argument("--max-train-batches", type=int, default=None)
-    parser.add_argument("--max-test-batches", type=int, default=None)
-    parser.add_argument("--patch-size", type=int, default=4)
-    parser.add_argument("--embed-dim", type=int, default=128)
-    parser.add_argument("--depth", type=int, default=4)
+    parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument("--max-train-batches", type=int, default=100)
+    parser.add_argument("--max-test-batches", type=int, default=20)
+    parser.add_argument("--patch-size", type=int, default=8)
+    parser.add_argument("--embed-dim", type=int, default=64)
+    parser.add_argument("--depth", type=int, default=2)
     parser.add_argument("--num-heads", type=int, default=4)
+    parser.add_argument("--mlp-ratio", type=float, default=2.0)
     parser.add_argument("--dropout", type=float, default=0.1)
+    parser.add_argument(
+        "--no-amp",
+        action="store_true",
+        help="Disable CUDA automatic mixed precision training.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+
+    use_amp = device.type == "cuda" and not args.no_amp
     config = ViTConfig(
         patch_size=args.patch_size,
         embed_dim=args.embed_dim,
         depth=args.depth,
         num_heads=args.num_heads,
+        mlp_ratio=args.mlp_ratio,
         dropout=args.dropout,
     )
 
@@ -278,8 +296,9 @@ def main() -> None:
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 
-    print(f"device={device}, config={config}")
+    print(f"device={device}, amp={use_amp}, config={config}")
     for epoch in range(1, args.epochs + 1):
         train_loss, train_acc = train_one_epoch(
             model,
@@ -288,6 +307,8 @@ def main() -> None:
             optimizer,
             device,
             args.max_train_batches,
+            scaler,
+            use_amp,
         )
         test_loss, test_acc = evaluate(
             model,
@@ -295,6 +316,7 @@ def main() -> None:
             criterion,
             device,
             args.max_test_batches,
+            use_amp,
         )
         print(
             f"epoch {epoch:02d} | "
