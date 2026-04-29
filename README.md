@@ -33,10 +33,10 @@ python3 -m pip install -r requirements.txt
 python3 src/attention.py
 ```
 
-运行一个轻量型 ViT 图像分类实验：
+运行一个适合笔记本 RTX 5060 的 ViT 图像分类实验：
 
 ```bash
-python3 src/vit_classifier.py --epochs 1 --batch-size 128 --max-train-batches 100 --max-test-batches 20
+python3 src/vit_classifier.py
 ```
 
 如果本机有 GPU，脚本会自动使用 CUDA，并默认开启混合精度训练；否则使用 CPU。第一次运行会自动下载 CIFAR-10 数据集到 `data/` 目录。
@@ -53,14 +53,21 @@ results/
 
 也可以通过 `--output-dir my_results` 指定其他输出目录。
 
-默认参数已调整为适合笔记本 GPU 的轻量配置：
+默认参数已调整为更高准确率的 GPU 配置：
 
-- `--patch-size 8`：每张 `32 x 32` 图像只产生 16 个 patch token，注意力计算更少。
-- `--embed-dim 64`：降低 token 特征维度。
-- `--depth 2`：减少 Transformer block 层数。
-- `--num-workers 4`：提高数据加载并行度。
+- `--epochs 20`：训练更充分，预测图会明显更准。
+- `--patch-size 4`：每张 `32 x 32` 图像产生 64 个 patch token，保留更多细节。
+- `--embed-dim 128`、`--depth 6`：模型容量高于快速演示版。
+- 默认使用全量训练集和测试集，不再只训练少量 batch。
+- 使用 AdamW、label smoothing、余弦学习率调度和 CUDA 混合精度。
 
-如果显存充足，可以尝试提高 `--batch-size`；如果仍然较慢，可以加上 `--max-train-batches 50` 先快速完成作业演示。
+如果只是想快速检查代码能否运行，可以用快速演示命令：
+
+```bash
+python3 src/vit_classifier.py --epochs 1 --batch-size 128 --max-train-batches 100 --max-test-batches 20 --patch-size 8 --embed-dim 64 --depth 2 --mlp-ratio 2.0
+```
+
+如果显存充足，可以尝试提高 `--batch-size 384`；如果显存不足，则改为 `--batch-size 128`。
 
 ## 作业完成建议
 

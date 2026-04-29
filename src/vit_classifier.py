@@ -30,13 +30,13 @@ from attention import MultiHeadSelfAttention
 @dataclass
 class ViTConfig:
     image_size: int = 32
-    patch_size: int = 8
+    patch_size: int = 4
     in_channels: int = 3
     num_classes: int = 10
-    embed_dim: int = 64
-    depth: int = 2
+    embed_dim: int = 128
+    depth: int = 6
     num_heads: int = 4
-    mlp_ratio: float = 2.0
+    mlp_ratio: float = 4.0
     dropout: float = 0.1
 
     @property
@@ -163,6 +163,7 @@ def make_dataloaders(
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(CIFAR10_MEAN, CIFAR10_STD),
+            transforms.RandomErasing(p=0.25, scale=(0.02, 0.12), ratio=(0.3, 3.3)),
         ]
     )
     test_transform = transforms.Compose(
@@ -178,19 +179,24 @@ def make_dataloaders(
     test_dataset = datasets.CIFAR10(
         root=str(data_dir), train=False, download=True, transform=test_transform
     )
+    loader_kwargs = {
+        "num_workers": num_workers,
+        "pin_memory": torch.cuda.is_available(),
+    }
+    if num_workers > 0:
+        loader_kwargs.update({"persistent_workers": True, "prefetch_factor": 2})
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
-        pin_memory=torch.cuda.is_available(),
+        **loader_kwargs,
     )
     test_loader = DataLoader(
         test_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
-        pin_memory=torch.cuda.is_available(),
+        **loader_kwargs,
     )
     return train_loader, test_loader
 
@@ -221,7 +227,8 @@ def train_one_epoch(
     total_samples = 0
 
     for images, labels in iterate_limited(loader, max_batches):
-        images, labels = images.to(device), labels.to(device)
+        images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
         optimizer.zero_grad(set_to_none=True)
         with torch.autocast(device_type=device.type, enabled=use_amp):
             logits = model(images)
@@ -254,7 +261,8 @@ def evaluate(
     total_samples = 0
 
     for images, labels in iterate_limited(loader, max_batches):
-        images, labels = images.to(device), labels.to(device)
+        images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
         with torch.autocast(device_type=device.type, enabled=use_amp):
             logits = model(images)
             loss = criterion(logits, labels)
@@ -272,7 +280,14 @@ def save_training_log(history: list[dict[str, float]], output_dir: Path) -> Path
     with log_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
             file,
-            fieldnames=["epoch", "train_loss", "train_acc", "test_loss", "test_acc"],
+            fieldnames=[
+                "epoch",
+                "lr",
+                "train_loss",
+                "train_acc",
+                "test_loss",
+                "test_acc",
+            ],
         )
         writer.writeheader()
         writer.writerows(history)
@@ -359,6 +374,7 @@ def save_sample_predictions(
 def save_checkpoint(
     model: nn.Module,
     optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler.LRScheduler,
     config: ViTConfig,
     history: list[dict[str, float]],
     output_dir: Path,
@@ -368,6 +384,7 @@ def save_checkpoint(
         {
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
+            "scheduler_state_dict": scheduler.state_dict(),
             "config": config.__dict__,
             "history": history,
             "class_names": CIFAR10_CLASSES,
@@ -380,19 +397,20 @@ def save_checkpoint(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="ViT image classification homework")
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
-    parser.add_argument("--epochs", type=int, default=1)
-    parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--lr", type=float, default=3e-4)
-    parser.add_argument("--weight-decay", type=float, default=0.05)
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--weight-decay", type=float, default=0.03)
     parser.add_argument("--num-workers", type=int, default=4)
-    parser.add_argument("--max-train-batches", type=int, default=100)
-    parser.add_argument("--max-test-batches", type=int, default=20)
-    parser.add_argument("--patch-size", type=int, default=8)
-    parser.add_argument("--embed-dim", type=int, default=64)
-    parser.add_argument("--depth", type=int, default=2)
+    parser.add_argument("--max-train-batches", type=int, default=None)
+    parser.add_argument("--max-test-batches", type=int, default=None)
+    parser.add_argument("--patch-size", type=int, default=4)
+    parser.add_argument("--embed-dim", type=int, default=128)
+    parser.add_argument("--depth", type=int, default=6)
     parser.add_argument("--num-heads", type=int, default=4)
-    parser.add_argument("--mlp-ratio", type=float, default=2.0)
+    parser.add_argument("--mlp-ratio", type=float, default=4.0)
     parser.add_argument("--dropout", type=float, default=0.1)
+    parser.add_argument("--label-smoothing", type=float, default=0.1)
     parser.add_argument("--output-dir", type=Path, default=Path("results"))
     parser.add_argument("--num-sample-images", type=int, default=16)
     parser.add_argument(
@@ -408,6 +426,7 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = True
+        torch.set_float32_matmul_precision("high")
     else:
         print(
             "CUDA is not available. Training will run on CPU; "
@@ -430,16 +449,28 @@ def main() -> None:
         num_workers=args.num_workers,
     )
     model = VisionTransformer(config).to(device)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
+    )
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=args.epochs,
+        eta_min=args.lr * 0.05,
     )
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"device={device}, amp={use_amp}, config={config}")
+    print(
+        "training setup: "
+        f"epochs={args.epochs}, batch_size={args.batch_size}, "
+        f"max_train_batches={args.max_train_batches}, max_test_batches={args.max_test_batches}, "
+        f"lr={args.lr}, label_smoothing={args.label_smoothing}"
+    )
     history: list[dict[str, float]] = []
     for epoch in range(1, args.epochs + 1):
+        current_lr = optimizer.param_groups[0]["lr"]
         train_loss, train_acc = train_one_epoch(
             model,
             train_loader,
@@ -460,18 +491,21 @@ def main() -> None:
         )
         print(
             f"epoch {epoch:02d} | "
+            f"lr {current_lr:.6f} | "
             f"train loss {train_loss:.4f}, acc {train_acc:.3f} | "
             f"test loss {test_loss:.4f}, acc {test_acc:.3f}"
         )
         history.append(
             {
                 "epoch": epoch,
+                "lr": current_lr,
                 "train_loss": train_loss,
                 "train_acc": train_acc,
                 "test_loss": test_loss,
                 "test_acc": test_acc,
             }
         )
+        scheduler.step()
 
     log_path = save_training_log(history, args.output_dir)
     curve_path = plot_training_curves(history, args.output_dir)
@@ -483,7 +517,9 @@ def main() -> None:
         args.num_sample_images,
         use_amp,
     )
-    checkpoint_path = save_checkpoint(model, optimizer, config, history, args.output_dir)
+    checkpoint_path = save_checkpoint(
+        model, optimizer, scheduler, config, history, args.output_dir
+    )
     print("Saved results:")
     print(f"- training log: {log_path}")
     print(f"- training curve: {curve_path}")
