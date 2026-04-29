@@ -1,10 +1,9 @@
-"""Train a small Vision Transformer for image classification on CIFAR-10.
+"""用 CIFAR-10 训练一个小型 Vision Transformer 图像分类器。
 
-This script is intentionally compact enough for homework practice while still
-showing the complete ViT pipeline:
+这个脚本保留了 ViT 的完整流程，适合作业实践和实验报告分析：
 
-image -> patch embedding -> class token + position embedding -> Transformer
-encoder -> classification head.
+图像 -> patch embedding -> class token + position embedding -> Transformer
+encoder -> 分类头。
 """
 
 from __future__ import annotations
@@ -17,6 +16,7 @@ from typing import Iterable
 
 import matplotlib
 
+# 在命令行或 PyCharm 中运行时不弹出窗口，直接把曲线图保存为 png 文件。
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
@@ -29,6 +29,8 @@ from attention import MultiHeadSelfAttention
 
 @dataclass
 class ViTConfig:
+    """集中保存 ViT 模型结构参数，方便命令行修改实验配置。"""
+
     image_size: int = 32
     patch_size: int = 4
     in_channels: int = 3
@@ -41,10 +43,12 @@ class ViTConfig:
 
     @property
     def num_patches(self) -> int:
+        """计算一张图会被切成多少个 patch。"""
         patches_per_side = self.image_size // self.patch_size
         return patches_per_side * patches_per_side
 
 
+# CIFAR-10 的 10 个类别名称，用于保存预测可视化图片。
 CIFAR10_CLASSES = (
     "airplane",
     "automobile",
@@ -57,12 +61,13 @@ CIFAR10_CLASSES = (
     "ship",
     "truck",
 )
+# CIFAR-10 常用均值和标准差。训练时用于归一化，画图时再反归一化回来。
 CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
 CIFAR10_STD = (0.2470, 0.2435, 0.2616)
 
 
 class PatchEmbedding(nn.Module):
-    """Convert images into patch tokens with a convolutional projection."""
+    """把二维图像切成 patch，并映射成 Transformer 能处理的 token 序列。"""
 
     def __init__(self, config: ViTConfig) -> None:
         super().__init__()
@@ -77,15 +82,17 @@ class PatchEmbedding(nn.Module):
         )
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
-        # images: (batch, channels, height, width)
+        # 输入 images: (batch, channels, height, width)，例如 (B, 3, 32, 32)。
+        # kernel_size=stride=patch_size，相当于把图像按不重叠 patch 切块。
         patches = self.proj(images)
-        # patches: (batch, embed_dim, h/patch, w/patch)
+        # patches: (batch, embed_dim, h/patch, w/patch)。
+        # flatten(2) 展平空间维度，再 transpose 变成 token 序列。
         return patches.flatten(2).transpose(1, 2)
-        # tokens: (batch, num_patches, embed_dim)
+        # 输出 tokens: (batch, num_patches, embed_dim)。
 
 
 class TransformerEncoderBlock(nn.Module):
-    """Pre-norm Transformer encoder block used by ViT."""
+    """ViT 使用的 Transformer Encoder block：注意力 + MLP + 残差连接。"""
 
     def __init__(self, config: ViTConfig) -> None:
         super().__init__()
@@ -106,20 +113,24 @@ class TransformerEncoderBlock(nn.Module):
         )
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+        # Pre-Norm 结构：先 LayerNorm，再做多头注意力，最后残差相加。
         attn_output, _ = self.attn(self.norm1(tokens))
         tokens = tokens + attn_output
+        # 第二个子层是 MLP，用来增强每个 token 的非线性表达能力。
         tokens = tokens + self.mlp(self.norm2(tokens))
         return tokens
 
 
 class VisionTransformer(nn.Module):
-    """A small ViT classifier suitable for CIFAR-10 experiments."""
+    """适合 CIFAR-10 实验的小型 ViT 分类模型。"""
 
     def __init__(self, config: ViTConfig) -> None:
         super().__init__()
         self.config = config
         self.patch_embed = PatchEmbedding(config)
+        # class token 是一个可学习向量，最终用它代表整张图像做分类。
         self.cls_token = nn.Parameter(torch.zeros(1, 1, config.embed_dim))
+        # position embedding 用来告诉 Transformer 每个 patch 的空间位置。
         self.pos_embed = nn.Parameter(
             torch.zeros(1, config.num_patches + 1, config.embed_dim)
         )
@@ -133,6 +144,7 @@ class VisionTransformer(nn.Module):
         self._init_weights()
 
     def _init_weights(self) -> None:
+        """使用截断正态分布初始化可学习参数，使训练更稳定。"""
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
         nn.init.trunc_normal_(self.cls_token, std=0.02)
         for module in self.modules():
@@ -143,11 +155,16 @@ class VisionTransformer(nn.Module):
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         batch_size = images.shape[0]
+        # 1. 图像切 patch 并映射为 token。
         patch_tokens = self.patch_embed(images)
+        # 2. 为 batch 中每张图复制一个 class token。
         cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+        # 3. 把 class token 拼到 patch token 前面。
         tokens = torch.cat((cls_tokens, patch_tokens), dim=1)
+        # 4. 加位置编码后送入多层 Transformer Encoder。
         tokens = self.dropout(tokens + self.pos_embed)
         tokens = self.blocks(tokens)
+        # 5. 取第 0 个 class token 的输出作为整张图像特征。
         cls_output = self.norm(tokens[:, 0])
         return self.head(cls_output)
 
@@ -157,8 +174,11 @@ def make_dataloaders(
     batch_size: int,
     num_workers: int,
 ) -> tuple[DataLoader, DataLoader]:
+    """构造 CIFAR-10 的训练集和测试集 DataLoader。"""
+
     train_transform = transforms.Compose(
         [
+            # 数据增强：随机裁剪、水平翻转、随机擦除，提高泛化能力。
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
@@ -181,9 +201,11 @@ def make_dataloaders(
     )
     loader_kwargs = {
         "num_workers": num_workers,
+        # pin_memory=True 可以配合 non_blocking=True 加快 CPU 到 GPU 的数据拷贝。
         "pin_memory": torch.cuda.is_available(),
     }
     if num_workers > 0:
+        # worker 常驻和预取数据可以减少 GPU 等待数据的时间。
         loader_kwargs.update({"persistent_workers": True, "prefetch_factor": 2})
 
     train_loader = DataLoader(
@@ -205,6 +227,8 @@ def iterate_limited(
     loader: DataLoader,
     max_batches: int | None,
 ) -> Iterable[tuple[torch.Tensor, torch.Tensor]]:
+    """遍历 DataLoader；如果设置 max_batches，就只跑指定数量的 batch。"""
+
     for batch_idx, batch in enumerate(loader):
         if max_batches is not None and batch_idx >= max_batches:
             break
@@ -221,19 +245,24 @@ def train_one_epoch(
     scaler: torch.amp.GradScaler,
     use_amp: bool,
 ) -> tuple[float, float]:
+    """训练一个 epoch，返回平均 loss 和 accuracy。"""
+
     model.train()
     total_loss = 0.0
     total_correct = 0
     total_samples = 0
 
     for images, labels in iterate_limited(loader, max_batches):
+        # non_blocking=True 在 CUDA + pin_memory 时可以异步传输数据。
         images = images.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
         optimizer.zero_grad(set_to_none=True)
+        # GPU 上启用 AMP 混合精度，可以降低显存占用并加速训练。
         with torch.autocast(device_type=device.type, enabled=use_amp):
             logits = model(images)
             loss = criterion(logits, labels)
 
+        # GradScaler 用于 AMP，防止半精度训练时梯度下溢。
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
@@ -255,6 +284,8 @@ def evaluate(
     max_batches: int | None,
     use_amp: bool,
 ) -> tuple[float, float]:
+    """在测试集上评估模型，不计算梯度，返回平均 loss 和 accuracy。"""
+
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -276,6 +307,8 @@ def evaluate(
 
 
 def save_training_log(history: list[dict[str, float]], output_dir: Path) -> Path:
+    """把每轮训练结果保存成 CSV 表格，便于写实验报告。"""
+
     log_path = output_dir / "training_log.csv"
     with log_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
@@ -295,6 +328,8 @@ def save_training_log(history: list[dict[str, float]], output_dir: Path) -> Path
 
 
 def plot_training_curves(history: list[dict[str, float]], output_dir: Path) -> Path:
+    """根据 history 绘制 loss 曲线和 accuracy 曲线。"""
+
     curve_path = output_dir / "training_curve.png"
     epochs = [row["epoch"] for row in history]
 
@@ -323,6 +358,8 @@ def plot_training_curves(history: list[dict[str, float]], output_dir: Path) -> P
 
 
 def denormalize_cifar10(images: torch.Tensor) -> torch.Tensor:
+    """把归一化后的图像还原到 0~1 范围，方便 matplotlib 正常显示。"""
+
     mean = torch.tensor(CIFAR10_MEAN, device=images.device).view(1, 3, 1, 1)
     std = torch.tensor(CIFAR10_STD, device=images.device).view(1, 3, 1, 1)
     return (images * std + mean).clamp(0.0, 1.0)
@@ -337,6 +374,8 @@ def save_sample_predictions(
     num_images: int,
     use_amp: bool,
 ) -> Path:
+    """保存若干测试样本的预测结果图，绿色表示预测正确，红色表示预测错误。"""
+
     prediction_path = output_dir / "sample_predictions.png"
     model.eval()
     images, labels = next(iter(loader))
@@ -379,6 +418,8 @@ def save_checkpoint(
     history: list[dict[str, float]],
     output_dir: Path,
 ) -> Path:
+    """保存模型权重、优化器状态、学习率调度器状态和训练历史。"""
+
     checkpoint_path = output_dir / "vit_lightweight.pth"
     torch.save(
         {
@@ -395,6 +436,8 @@ def save_checkpoint(
 
 
 def parse_args() -> argparse.Namespace:
+    """解析命令行参数，例如训练轮数、batch size、模型大小和输出目录。"""
+
     parser = argparse.ArgumentParser(description="ViT image classification homework")
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
     parser.add_argument("--epochs", type=int, default=20)
@@ -425,7 +468,9 @@ def main() -> None:
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
+        # 固定输入大小时，benchmark 可以让 cuDNN 自动选择更快的卷积算法。
         torch.backends.cudnn.benchmark = True
+        # 允许 Tensor Core 使用较快的矩阵乘法精度，适合 RTX 5060 这类 NVIDIA GPU。
         torch.set_float32_matmul_precision("high")
     else:
         print(
@@ -453,6 +498,7 @@ def main() -> None:
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
+    # 余弦退火学习率：前期学习率较大，后期逐渐变小，有助于收敛。
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=args.epochs,
@@ -505,8 +551,10 @@ def main() -> None:
                 "test_acc": test_acc,
             }
         )
+        # 每个 epoch 结束后更新一次学习率。
         scheduler.step()
 
+    # 训练结束后自动保存表格、曲线图、预测图和模型权重。
     log_path = save_training_log(history, args.output_dir)
     curve_path = plot_training_curves(history, args.output_dir)
     prediction_path = save_sample_predictions(
