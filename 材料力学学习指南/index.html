@@ -266,12 +266,14 @@
         <header>
             <h1>力学学习指南 - 下载中心</h1>
             <p>适合跨专业研究生的系统学习资料<br>涵盖核心概念、公式推导、图示说明与典型例题</p>
-            <span class="badge">共 14 份文档 · 材料力学 + 理论力学</span>
+            <span class="badge">共 27 份文档 · 四大学科全覆盖</span>
         </header>
 
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('material')">材料力学（7 份）</div>
-            <div class="tab" onclick="switchTab('theory')">理论力学（7 份）</div>
+            <div class="tab active" onclick="switchTab('material')">材料力学</div>
+            <div class="tab" onclick="switchTab('theory')">理论力学</div>
+            <div class="tab" onclick="switchTab('fem')">有限元分析</div>
+            <div class="tab" onclick="switchTab('code')">MATLAB/Python</div>
         </div>
 
         <!-- ==================== 材料力学 ==================== -->
@@ -478,13 +480,43 @@
             </div>
         </div>
 
+        <!-- ==================== 有限元分析 ==================== -->
+        <div id="panel-fem" class="tab-panel">
+            <div class="download-section">
+                <div class="section-title">有限元分析 · 章节下载</div>
+                <div class="card-grid">
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch1">01</div><div class="card-info"><h3>有限元基本概念</h3><p>离散化思想、刚度矩阵、最小势能原理、求解流程</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/01-%E6%9C%89%E9%99%90%E5%85%83%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch2">02</div><div class="card-info"><h3>杆单元与弹簧单元</h3><p>一维有限元入门、单元刚度矩阵、组装、边界条件</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/02-%E6%9D%86%E5%8D%95%E5%85%83%E4%B8%8E%E5%BC%B9%E7%B0%A7%E5%8D%95%E5%85%83.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch3">03</div><div class="card-info"><h3>平面问题与三角形单元</h3><p>平面应力/应变、CST单元、形函数、B矩阵</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/03-%E5%B9%B3%E9%9D%A2%E9%97%AE%E9%A2%98%E4%B8%8E%E4%B8%89%E8%A7%92%E5%BD%A2%E5%8D%95%E5%85%83.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch4">04</div><div class="card-info"><h3>等参单元与数值积分</h3><p>四边形单元、等参变换、高斯积分、单元选择</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/04-%E7%AD%89%E5%8F%82%E5%8D%95%E5%85%83%E4%B8%8E%E6%95%B0%E5%80%BC%E7%A7%AF%E5%88%86.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch5">05</div><div class="card-info"><h3>有限元建模实践</h3><p>ANSYS/Abaqus 操作流程、网格划分、结果验证</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/05-%E6%9C%89%E9%99%90%E5%85%83%E5%BB%BA%E6%A8%A1%E5%AE%9E%E8%B7%B5.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ref"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></div><div class="card-info"><h3>公式速查表</h3><p>有限元核心公式、单元类型对照表、单位制</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/06-%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MATLAB/Python ==================== -->
+        <div id="panel-code" class="tab-panel">
+            <div class="download-section">
+                <div class="section-title">MATLAB / Python 编程 · 章节下载</div>
+                <div class="card-grid">
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch1">01</div><div class="card-info"><h3>MATLAB 基础与矩阵运算</h3><p>语法入门、矩阵操作、函数、绘图</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/01-MATLAB%E5%9F%BA%E7%A1%80.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch2">02</div><div class="card-info"><h3>Python 科学计算基础</h3><p>NumPy、SciPy、Matplotlib 入门</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/02-Python%E7%A7%91%E5%AD%A6%E8%AE%A1%E7%AE%97.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch3">03</div><div class="card-info"><h3>力学数值计算实战</h3><p>方程组求解、微分方程、数值积分、非线性方程</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/03-%E5%8A%9B%E5%AD%A6%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch4">04</div><div class="card-info"><h3>有限元编程实战</h3><p>桁架 FEM 程序、99行拓扑优化、Abaqus 脚本</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/04-%E6%9C%89%E9%99%90%E5%85%83%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch5">05</div><div class="card-info"><h3>数据可视化与后处理</h3><p>云图、变形图、动画、论文级图表</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/05-%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ref"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></div><div class="card-info"><h3>编程速查表</h3><p>MATLAB/Python 语法对照、NumPy、有限元模板</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/06-%E7%BC%96%E7%A8%8B%E9%80%9F%E6%9F%A5%E8%A1%A8.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== 批量下载 ==================== -->
         <div class="download-section">
             <div class="section-title">批量下载</div>
             <div class="card-grid">
                 <a class="btn-download btn-download-all" href="https://github.com/YoungGV/YangJiwei/archive/refs/heads/cursor/mechanics-study-guide-d739.zip" download>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    一键下载全部文件（材料力学 + 理论力学 ZIP 压缩包）
+                    一键下载全部文件（四科全部 ZIP 压缩包）
                 </a>
             </div>
         </div>
@@ -495,7 +527,7 @@
                 <li>所有文件均为 <strong>Markdown (.md)</strong> 格式，可用 Typora、VS Code、Obsidian 等工具打开</li>
                 <li>推荐使用 <strong>Typora</strong> 阅读，支持公式渲染和目录导航，体验最佳</li>
                 <li>公式速查表建议导出为 PDF 后打印，方便随身查阅</li>
-                <li>「一键下载全部文件」会下载 ZIP 压缩包，解压后分别在 <code>材料力学学习指南</code> 和 <code>理论力学学习指南</code> 文件夹中找到文件</li>
+                <li>「一键下载全部文件」会下载 ZIP 压缩包，解压后在各个学科文件夹中找到对应文件</li>
                 <li>如果单个文件下载后显示为纯文本，请右键 → 另存为 → 修改扩展名为 <code>.md</code></li>
             </ul>
         </div>
