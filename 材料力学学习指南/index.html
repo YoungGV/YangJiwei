@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>力学学习指南 - 下载中心</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                         "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        header p {
+            font-size: 1.05rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(96, 165, 250, 0.15);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 20px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s ease;
+        }
+
+        .tab:hover {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+        }
+
+        .tab.active {
+            background: rgba(96, 165, 250, 0.15);
+            border-color: rgba(96, 165, 250, 0.5);
+            color: #60a5fa;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .download-section {
+            margin-bottom: 36px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            padding-left: 4px;
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(96, 165, 250, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .icon-ch1 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .icon-ch2 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .icon-ch3 { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .icon-ch4 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-ch5 { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-ch6 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .icon-ref { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+
+        .card-info h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .card-info p {
+            font-size: 0.85rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(96, 165, 250, 0.15);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 10px;
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .btn-download:hover {
+            background: rgba(96, 165, 250, 0.25);
+            border-color: #60a5fa;
+            color: #93bbfc;
+        }
+
+        .btn-download svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-download-all {
+            width: 100%;
+            justify-content: center;
+            padding: 16px 24px;
+            font-size: 1rem;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(167, 139, 250, 0.2));
+            border: 1px solid rgba(96, 165, 250, 0.35);
+        }
+
+        .btn-download-all:hover {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.35), rgba(167, 139, 250, 0.35));
+        }
+
+        .tips {
+            margin-top: 48px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 14px;
+            padding: 24px 28px;
+        }
+
+        .tips h3 {
+            font-size: 1rem;
+            color: #a78bfa;
+            margin-bottom: 12px;
+        }
+
+        .tips ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips li {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .tips li::before {
+            content: "\2192";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            padding: 20px;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+            header h1 { font-size: 1.8rem; }
+            .card { flex-direction: column; align-items: stretch; gap: 14px; }
+            .btn-download { justify-content: center; }
+            .tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>力学学习指南 - 下载中心</h1>
+            <p>适合跨专业研究生的系统学习资料<br>涵盖核心概念、公式推导、图示说明与典型例题</p>
+            <span class="badge">共 27 份文档 · 四大学科全覆盖</span>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('material')">材料力学</div>
+            <div class="tab" onclick="switchTab('theory')">理论力学</div>
+            <div class="tab" onclick="switchTab('fem')">有限元分析</div>
+            <div class="tab" onclick="switchTab('code')">MATLAB/Python</div>
+        </div>
+
+        <!-- ==================== 材料力学 ==================== -->
+        <div id="panel-material" class="tab-panel active">
+            <div class="download-section">
+                <div class="section-title">材料力学 · 章节下载</div>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch1">01</div>
+                            <div class="card-info">
+                                <h3>基本概念与基础</h3>
+                                <p>应力、应变、胡克定律、材料力学性能、拉伸试验</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/01-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%9F%BA%E7%A1%80.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch2">02</div>
+                            <div class="card-info">
+                                <h3>轴向拉伸与压缩</h3>
+                                <p>截面法、轴力图、应力计算、变形公式、超静定</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/02-%E8%BD%B4%E5%90%91%E6%8B%89%E4%BC%B8%E4%B8%8E%E5%8E%8B%E7%BC%A9.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch3">03</div>
+                            <div class="card-info">
+                                <h3>剪切与扭转</h3>
+                                <p>剪应力、挤压应力、扭矩图、圆轴扭转、强度与刚度</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/03-%E5%89%AA%E5%88%87%E4%B8%8E%E6%89%AD%E8%BD%AC.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch4">04</div>
+                            <div class="card-info">
+                                <h3>弯曲</h3>
+                                <p>剪力图、弯矩图、弯曲正应力、挠度与转角、叠加法</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/04-%E5%BC%AF%E6%9B%B2.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch5">05</div>
+                            <div class="card-info">
+                                <h3>应力状态与强度理论</h3>
+                                <p>主应力、莫尔圆、广义胡克定律、von Mises 准则</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/05-%E5%BA%94%E5%8A%9B%E7%8A%B6%E6%80%81%E4%B8%8E%E5%BC%BA%E5%BA%A6%E7%90%86%E8%AE%BA.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch6">06</div>
+                            <div class="card-info">
+                                <h3>压杆稳定性</h3>
+                                <p>欧拉公式、柔度、临界应力总图、稳定性校核</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/06-%E5%8E%8B%E6%9D%86%E7%A8%B3%E5%AE%9A%E6%80%A7.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ref">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+                            </div>
+                            <div class="card-info">
+                                <h3>公式速查表</h3>
+                                <p>全部核心公式汇总 · 常用材料参数 · 可打印</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9D%90%E6%96%99%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/07-%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 理论力学 ==================== -->
+        <div id="panel-theory" class="tab-panel">
+            <div class="download-section">
+                <div class="section-title">理论力学 · 章节下载</div>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch1">01</div>
+                            <div class="card-info">
+                                <h3>静力学基础</h3>
+                                <p>力、力矩、力偶、约束与约束力、受力图、二力杆</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/01-%E9%9D%99%E5%8A%9B%E5%AD%A6%E5%9F%BA%E7%A1%80.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch2">02</div>
+                            <div class="card-info">
+                                <h3>力系的简化与平衡</h3>
+                                <p>力系简化、主矢主矩、平衡方程、摩擦</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/02-%E5%8A%9B%E7%B3%BB%E7%9A%84%E7%AE%80%E5%8C%96%E4%B8%8E%E5%B9%B3%E8%A1%A1.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch3">03</div>
+                            <div class="card-info">
+                                <h3>运动学</h3>
+                                <p>点的运动、刚体平动与转动、合成运动、科氏加速度</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/03-%E8%BF%90%E5%8A%A8%E5%AD%A6.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch4">04</div>
+                            <div class="card-info">
+                                <h3>动力学基础</h3>
+                                <p>牛顿定律、动量定理、动量矩定理、转动惯量</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/04-%E5%8A%A8%E5%8A%9B%E5%AD%A6%E5%9F%BA%E7%A1%80.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch5">05</div>
+                            <div class="card-info">
+                                <h3>动能定理与机械能</h3>
+                                <p>功、功率、动能定理、势能、机械能守恒</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/05-%E5%8A%A8%E8%83%BD%E5%AE%9A%E7%90%86%E4%B8%8E%E6%9C%BA%E6%A2%B0%E8%83%BD.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ch6">06</div>
+                            <div class="card-info">
+                                <h3>达朗贝尔原理与虚位移原理</h3>
+                                <p>惯性力、动静法、虚功方程、拉格朗日方程</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/06-%E8%BE%BE%E6%9C%97%E8%B4%9D%E5%B0%94%E5%8E%9F%E7%90%86%E4%B8%8E%E8%99%9A%E4%BD%8D%E7%A7%BB%E5%8E%9F%E7%90%86.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                    <div class="card">
+                        <div class="card-left">
+                            <div class="card-icon icon-ref">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+                            </div>
+                            <div class="card-info">
+                                <h3>公式速查表</h3>
+                                <p>静力学·运动学·动力学·分析力学 全部公式汇总</p>
+                            </div>
+                        </div>
+                        <a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E7%90%86%E8%AE%BA%E5%8A%9B%E5%AD%A6%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/07-%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8.md" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            下载
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 有限元分析 ==================== -->
+        <div id="panel-fem" class="tab-panel">
+            <div class="download-section">
+                <div class="section-title">有限元分析 · 章节下载</div>
+                <div class="card-grid">
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch1">01</div><div class="card-info"><h3>有限元基本概念</h3><p>离散化思想、刚度矩阵、最小势能原理、求解流程</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/01-%E6%9C%89%E9%99%90%E5%85%83%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch2">02</div><div class="card-info"><h3>杆单元与弹簧单元</h3><p>一维有限元入门、单元刚度矩阵、组装、边界条件</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/02-%E6%9D%86%E5%8D%95%E5%85%83%E4%B8%8E%E5%BC%B9%E7%B0%A7%E5%8D%95%E5%85%83.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch3">03</div><div class="card-info"><h3>平面问题与三角形单元</h3><p>平面应力/应变、CST单元、形函数、B矩阵</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/03-%E5%B9%B3%E9%9D%A2%E9%97%AE%E9%A2%98%E4%B8%8E%E4%B8%89%E8%A7%92%E5%BD%A2%E5%8D%95%E5%85%83.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch4">04</div><div class="card-info"><h3>等参单元与数值积分</h3><p>四边形单元、等参变换、高斯积分、单元选择</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/04-%E7%AD%89%E5%8F%82%E5%8D%95%E5%85%83%E4%B8%8E%E6%95%B0%E5%80%BC%E7%A7%AF%E5%88%86.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch5">05</div><div class="card-info"><h3>有限元建模实践</h3><p>ANSYS/Abaqus 操作流程、网格划分、结果验证</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/05-%E6%9C%89%E9%99%90%E5%85%83%E5%BB%BA%E6%A8%A1%E5%AE%9E%E8%B7%B5.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ref"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></div><div class="card-info"><h3>公式速查表</h3><p>有限元核心公式、单元类型对照表、单位制</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/%E6%9C%89%E9%99%90%E5%85%83%E5%88%86%E6%9E%90%E5%AD%A6%E4%B9%A0%E6%8C%87%E5%8D%97/06-%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5%E8%A1%A8.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MATLAB/Python ==================== -->
+        <div id="panel-code" class="tab-panel">
+            <div class="download-section">
+                <div class="section-title">MATLAB / Python 编程 · 章节下载</div>
+                <div class="card-grid">
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch1">01</div><div class="card-info"><h3>MATLAB 基础与矩阵运算</h3><p>语法入门、矩阵操作、函数、绘图</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/01-MATLAB%E5%9F%BA%E7%A1%80.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch2">02</div><div class="card-info"><h3>Python 科学计算基础</h3><p>NumPy、SciPy、Matplotlib 入门</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/02-Python%E7%A7%91%E5%AD%A6%E8%AE%A1%E7%AE%97.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch3">03</div><div class="card-info"><h3>力学数值计算实战</h3><p>方程组求解、微分方程、数值积分、非线性方程</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/03-%E5%8A%9B%E5%AD%A6%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch4">04</div><div class="card-info"><h3>有限元编程实战</h3><p>桁架 FEM 程序、99行拓扑优化、Abaqus 脚本</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/04-%E6%9C%89%E9%99%90%E5%85%83%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ch5">05</div><div class="card-info"><h3>数据可视化与后处理</h3><p>云图、变形图、动画、论文级图表</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/05-%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                    <div class="card"><div class="card-left"><div class="card-icon icon-ref"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="22" height="22"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></div><div class="card-info"><h3>编程速查表</h3><p>MATLAB/Python 语法对照、NumPy、有限元模板</p></div></div><a class="btn-download" href="https://raw.githubusercontent.com/YoungGV/YangJiwei/cursor/mechanics-study-guide-d739/MATLAB%E4%B8%8EPython%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/06-%E7%BC%96%E7%A8%8B%E9%80%9F%E6%9F%A5%E8%A1%A8.md" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载</a></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 批量下载 ==================== -->
+        <div class="download-section">
+            <div class="section-title">批量下载</div>
+            <div class="card-grid">
+                <a class="btn-download btn-download-all" href="https://github.com/YoungGV/YangJiwei/archive/refs/heads/cursor/mechanics-study-guide-d739.zip" download>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    一键下载全部文件（四科全部 ZIP 压缩包）
+                </a>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h3>使用说明</h3>
+            <ul>
+                <li>所有文件均为 <strong>Markdown (.md)</strong> 格式，可用 Typora、VS Code、Obsidian 等工具打开</li>
+                <li>推荐使用 <strong>Typora</strong> 阅读，支持公式渲染和目录导航，体验最佳</li>
+                <li>公式速查表建议导出为 PDF 后打印，方便随身查阅</li>
+                <li>「一键下载全部文件」会下载 ZIP 压缩包，解压后在各个学科文件夹中找到对应文件</li>
+                <li>如果单个文件下载后显示为纯文本，请右键 → 另存为 → 修改扩展名为 <code>.md</code></li>
+            </ul>
+        </div>
+
+        <footer>
+            <p>力学学习指南 · 为机械工程研究生而作</p>
+        </footer>
+    </div>
+
+    <script>
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+    </script>
+</body>
+</html>
