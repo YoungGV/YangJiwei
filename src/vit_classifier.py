@@ -191,7 +191,7 @@ def train_one_epoch(
     optimizer: torch.optim.Optimizer,
     device: torch.device,
     max_batches: int | None,
-    scaler: torch.cuda.amp.GradScaler,
+    scaler: torch.amp.GradScaler,
     use_amp: bool,
 ) -> tuple[float, float]:
     model.train()
@@ -275,6 +275,11 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = True
+    else:
+        print(
+            "CUDA is not available. Training will run on CPU; "
+            "install a CUDA-enabled PyTorch build to use your NVIDIA GPU."
+        )
 
     use_amp = device.type == "cuda" and not args.no_amp
     config = ViTConfig(
@@ -296,7 +301,7 @@ def main() -> None:
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
-    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
     print(f"device={device}, amp={use_amp}, config={config}")
     for epoch in range(1, args.epochs + 1):
